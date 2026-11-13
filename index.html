@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>COCO-LOOP: Sistem Rantai Pasok Kelapa Zero Waste</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f3f6f1;--sf:#fff;--ink:#16261b;--mut:#5d6f62;--ln:#d5dfd3;--ac:#1e6b45;--ac2:#e3f1e8;--wa:#b87a0d;--wb:#fbf1da;--dg:#b3382c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101a14;--sf:#17241b;--ink:#e6efe7;--mut:#93a698;--ln:#2a3c2f;--ac:#5fc08a;--ac2:#1c3426;--wa:#e0aa4a;--wb:#35290f;--dg:#f08a7e}}
+:root[data-theme="dark"]{--bg:#101a14;--sf:#17241b;--ink:#e6efe7;--mut:#93a698;--ln:#2a3c2f;--ac:#5fc08a;--ac2:#1c3426;--wa:#e0aa4a;--wb:#35290f;--dg:#f08a7e}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variant-numeric:tabular-nums}
+header{background:var(--ac);color:#fff;padding:14px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) header{color:#0b1a11}}
+header h1{margin:0;font-size:20px;letter-spacing:.2px}header small{display:block;opacity:.85;font-size:12.5px}
+select,input,button{font:inherit}
+select,input{background:var(--sf);color:var(--ink);border:1px solid var(--ln);border-radius:6px;padding:8px 10px;width:100%}
+header select{width:auto}
+nav{display:flex;gap:4px;overflow-x:auto;padding:10px 14px 0;border-bottom:1px solid var(--ln);background:var(--sf)}
+nav button{background:none;border:0;border-bottom:3px solid transparent;padding:9px 12px;color:var(--mut);cursor:pointer;white-space:nowrap}
+nav button.on{color:var(--ac);border-color:var(--ac);font-weight:600}
+nav button:focus-visible,.btn:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+main{max-width:1060px;margin:0 auto;padding:18px 14px 60px}
+h2{margin:0 0 4px;font-size:21px}h3{margin:0 0 10px;font-size:16px}
+.sub{color:var(--mut);margin:0 0 16px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.box{background:var(--sf);border:1px solid var(--ln);border-radius:8px;padding:14px}
+.k{font-size:26px;font-weight:700;line-height:1.1}.l{color:var(--mut);font-size:13px}
+.btn{background:var(--ac);color:#fff;border:0;border-radius:6px;padding:9px 14px;cursor:pointer;font-weight:600}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn{color:#0b1a11}}
+.btn.alt{background:var(--ac2);color:var(--ac)}.btn.sm{padding:5px 9px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+label{display:block;font-size:13px;color:var(--mut);margin:8px 0 3px}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:520px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--ln);font-size:14px}th{color:var(--mut);font-weight:600}
+.bar{height:10px;background:var(--ac2);border-radius:5px;overflow:hidden;margin-top:4px}.bar i{display:block;height:100%;background:var(--ac)}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;background:var(--ac2);color:var(--ac)}
+.tag.w{background:var(--wb);color:var(--wa)}
+.msg{padding:10px 12px;border-radius:6px;background:var(--ac2);color:var(--ac);margin:10px 0}.msg.e{background:var(--wb);color:var(--dg)}
+.card{display:flex;flex-direction:column;gap:6px}.card b{font-size:15px}.price{font-size:18px;font-weight:700;color:var(--ac)}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:16px;z-index:20}
+#modal .box{max-width:520px;width:100%;max-height:90vh;overflow:auto}
+.f{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}@media (max-width:520px){.f{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>COCO-LOOP</h1><small>Rantai pasok kelapa 6 komponen, 0% residu ke TPA</small></div>
+  <div><label for="role" style="display:inline;color:inherit;margin-right:6px">Masuk sebagai</label>
+  <select id="role"><option value="admin">Admin Hub</option><option value="tani">Kelompok Tani (Penjual)</option><option value="beli">Pembeli</option></select></div>
+</header>
+<nav id="nav" aria-label="Menu utama"></nav>
+<main id="app"></main>
+<div id="modal" role="dialog" aria-modal="true"><div class="box" id="mbody"></div></div>
+
+<script>
+const RAW={daging:['Daging kelapa',6000],daun:['Daun kelapa',2000],sabut:['Sabut',1500],air:['Air kelapa',1000],tempurung:['Tempurung',1200],batang:['Batang',1000]};
+const OUT={vco:['VCO',85000],tepung:['Tepung kelapa',40000],wrap:['Eco-Wrapping',60000],board:['Eco-Fiberboard',25000],bioplastik:['Bioplastik',90000],briket:['Briket',8000],lumber:['Eco-Lumber',30000],cocopeat:['Cocopeat',3000],biochar:['Biochar',7000]};
+// Neraca massa: tiap komponen dialokasikan 100% (produk + material regeneratif). Angka rendemen adalah asumsi simulasi untuk divalidasi pakar.
+const MB={daging:{vco:.25,tepung:.55,cocopeat:.20},daun:{wrap:.70,cocopeat:.30},sabut:{board:.60,cocopeat:.40},air:{bioplastik:.20,cocopeat:.80},tempurung:{briket:.70,biochar:.30},batang:{lumber:.55,biochar:.45}};
+const DEST={daging:'VCO & Tepung Kelapa',daun:'Eco-Wrapping',sabut:'Eco-Fiberboard',air:'Bioplastik',tempurung:'Briket',batang:'Eco-Lumber'};
+const EF={biochar:2.5,cocopeat:0.4}; // kg CO2e dihindari per kg (asumsi)
+const KEY='cocoloop_v1';
+const seed=()=>({raw:{daging:420,daun:300,sabut:520,air:380,tempurung:260,batang:600},
+ out:{vco:40,tepung:90,wrap:55,board:120,bioplastik:25,briket:150,lumber:80,cocopeat:60,biochar:45},
+ man:[{id:'MNF-0001',tgl:'2026-11-10',tani:'Kelompok Tani Maros Jaya',q:{daging:420,daun:300,sabut:520,air:380,tempurung:260,batang:600}}],
+ spk:[],ord:[],reg:[]});
+let S;try{S=JSON.parse(localStorage.getItem(KEY))||seed()}catch(e){S=seed()}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rp=n=>'Rp '+Math.round(n).toLocaleString('id-ID');
+const kg=n=>(Math.round(n*10)/10).toLocaleString('id-ID')+' kg';
+const today=()=>new Date().toISOString().slice(0,10);
+const pad=(n,l=4)=>String(n).padStart(l,'0');
+const VIEWS={admin:[['dash','Dashboard'],['src','Sourcing'],['mb','Mass Balance'],['mkt','Marketplace'],['ord','Transaksi'],['reg','Regenerasi']],tani:[['src','Sourcing'],['mkt','Marketplace'],['ord','Transaksi']],beli:[['mkt','Marketplace'],['ord','Transaksi']]};
+let role='admin',view='dash',note='';
+const $=id=>document.getElementById(id);
+$('role').onchange=e=>{role=e.target.value;view=VIEWS[role][0][0];note='';draw()};
+function go(v){view=v;note='';draw()}
+function draw(){
+ $('nav').innerHTML=VIEWS[role].map(([k,t])=>`<button class="${k===view?'on':''}" onclick="go('${k}')">${t}</button>`).join('');
+ $('app').innerHTML=({dash,src,mb,mkt,ord,reg})[view]()+(note?note:'');note='';save();
+}
+const msg=(t,e)=>`<div class="msg${e?' e':''}" role="status">${t}</div>`;
+// ---------- Dashboard ----------
+function dash(){
+ const rawT=Object.values(S.raw).reduce((a,b)=>a+b,0),outT=Object.values(S.out).reduce((a,b)=>a+b,0);
+ const paid=S.ord.filter(o=>o.st!=='Dibatalkan'),rev=paid.reduce((a,o)=>a+o.total,0);
+ const proc=S.spk.reduce((a,s)=>a+s.kg,0),res=S.spk.reduce((a,s)=>a+s.res,0);
+ const nilai=Object.keys(RAW).reduce((a,k)=>a+Object.entries(MB[k]).reduce((b,[o,y])=>b+y*OUT[o][1],0),0)/6;
+ const mx=Math.max(1,...Object.values(S.raw));
+ return `<h2>Dashboard admin</h2><p class="sub">Ringkasan stok, transaksi, dan kinerja sirkularitas.</p>
+ <div class="grid">
+ <div class="box"><div class="k">${kg(rawT)}</div><div class="l">Stok bahan baku (6 komponen)</div></div>
+ <div class="box"><div class="k">${kg(outT)}</div><div class="l">Stok produk &amp; material regeneratif</div></div>
+ <div class="box"><div class="k">${S.ord.length}</div><div class="l">Pesanan masuk</div></div>
+ <div class="box"><div class="k">${rp(rev)}</div><div class="l">Nilai transaksi</div></div>
+ <div class="box"><div class="k">${proc?'0%':'-'}</div><div class="l">Residu ke TPA (dari ${kg(proc)} diproses)</div></div>
+ <div class="box"><div class="k">${rp(nilai)}</div><div class="l">Estimasi nilai tambah per kg kelapa terpadu (simulasi)</div></div></div>
+ <div class="grid g2" style="margin-top:12px">
+ <div class="box"><h3>Stok bahan baku</h3>${Object.entries(RAW).map(([k,[n]])=>`<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between"><span>${n}</span><b>${kg(S.raw[k])}</b></div><div class="bar"><i style="width:${S.raw[k]/mx*100}%"></i></div></div>`).join('')}</div>
+ <div class="box"><h3>Stok produk</h3><div class="tw"><table><tr><th>Produk</th><th>Stok</th><th>Harga/kg</th></tr>${Object.entries(OUT).map(([k,[n,p]])=>`<tr><td>${n}</td><td>${kg(S.out[k])} ${S.out[k]<30?'<span class="tag w">menipis</span>':''}</td><td>${rp(p)}</td></tr>`).join('')}</table></div></div></div>
+ <div class="box" style="margin-top:12px"><h3>Perbandingan dengan pencatatan manual</h3><p style="margin:0">Pencatatan manual: nilai kelapa mentah Rp 2.500 sampai Rp 3.000 dan lebih dari 75% komponen non-daging terbuang. COCO-LOOP: manifest real-time dan seluruh 6 komponen dialokasikan.</p></div>`;
+}
+// ---------- Sourcing ----------
+function src(){
+ const can=role!=='beli';
+ return `<h2>Sourcing management</h2><p class="sub">Kelompok tani menginput pasokan harian 6 komponen kelapa. Stok bahan baku langsung bertambah dan manifest digital dibuat.</p>
+ <div class="grid g2"><div class="box"><h3>Form pasokan harian</h3>
+ <form onsubmit="return addSrc(event)"><label for="tn">Nama kelompok tani</label><input id="tn" required placeholder="mis. Kelompok Tani Maros Jaya">
+ <div class="f">${Object.entries(RAW).map(([k,[n]])=>`<div><label for="r_${k}">${n} (kg)</label><input id="r_${k}" type="number" min="0" step="0.1" value="0"></div>`).join('')}</div>
+ <p><button class="btn">Simpan &amp; terbitkan manifest</button></p></form></div>
+ <div class="box"><h3>Stok bahan baku saat ini</h3>${Object.entries(RAW).map(([k,[n]])=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--ln)"><span>${n}</span><b>${kg(S.raw[k])}</b></div>`).join('')}</div></div>
+ <div class="box" style="margin-top:12px"><h3>Digital manifest</h3><div class="tw"><table><tr><th>No.</th><th>Tanggal</th><th>Kelompok tani</th><th>Total</th><th></th></tr>
+ ${S.man.length?[...S.man].reverse().map(m=>`<tr><td>${m.id}</td><td>${m.tgl}</td><td>${esc(m.tani)}</td><td>${kg(Object.values(m.q).reduce((a,b)=>a+b,0))}</td><td><button class="btn alt sm" onclick="showMan('${m.id}')">Lihat</button></td></tr>`).join(''):'<tr><td colspan="5">Belum ada manifest. Isi form di atas.</td></tr>'}</table></div></div>`;
+}
+function addSrc(e){e.preventDefault();const q={};let t=0;
+ for(const k in RAW){q[k]=Math.max(0,parseFloat($('r_'+k).value)||0);t+=q[k]}
+ if(!t){note=msg('Isi minimal satu komponen lebih dari 0 kg.',1);draw();return false}
+ const tani=$('tn').value.trim();
+ for(const k in q)S.raw[k]+=q[k];
+ const id='MNF-'+pad(S.man.length+1);S.man.push({id,tgl:today(),tani,q});
+ note=msg(`Manifest ${id} tersimpan. Stok bertambah ${kg(t)}.`);draw();return false}
+function showMan(id){const m=S.man.find(x=>x.id===id);
+ openM(`<h3>Manifest ${m.id}</h3><p>${m.tgl} oleh ${esc(m.tani)}</p><table style="min-width:0">${Object.entries(m.q).map(([k,v])=>`<tr><td>${RAW[k][0]}</td><td>${kg(v)}</td></tr>`).join('')}</table>`)}
+// ---------- Mass balance ----------
+function mb(){
+ return `<h2>Mass balance engine</h2><p class="sub">Setiap komponen dialokasikan 100% ke produk atau material regeneratif. Tidak ada sisa yang dibuang.</p>
+ <div class="box"><div class="tw"><table><tr><th>Komponen</th><th>Stok</th><th>Alokasi (rendemen)</th><th>Jumlah diproses (kg)</th><th></th></tr>
+ ${Object.entries(RAW).map(([k,[n]])=>`<tr><td><b>${n}</b><br><span class="l">${DEST[k]}</span></td><td>${kg(S.raw[k])}</td>
+ <td>${Object.entries(MB[k]).map(([o,y])=>`${OUT[o][0]} ${y*100}%`).join('<br>')}<br><span class="tag">total 100%</span></td>
+ <td style="min-width:110px"><input id="p_${k}" type="number" min="0" max="${S.raw[k]}" step="0.1" value="${S.raw[k]}" aria-label="Jumlah ${n}"></td>
+ <td><button class="btn sm" ${role!=='admin'?'disabled':''} onclick="runMB('${k}')">Terbitkan SPK</button></td></tr>`).join('')}</table></div>
+ ${role!=='admin'?'<p class="l">Hanya admin hub yang dapat menerbitkan SPK.</p>':''}</div>
+ <div class="box" style="margin-top:12px"><h3>Surat perintah kerja (SPK) digital</h3><div class="tw"><table><tr><th>No.</th><th>Tanggal</th><th>Komponen</th><th>Input</th><th>Output</th><th>Residu</th></tr>
+ ${S.spk.length?[...S.spk].reverse().map(s=>`<tr><td>${s.id}</td><td>${s.tgl}</td><td>${RAW[s.k][0]}</td><td>${kg(s.kg)}</td><td>${Object.entries(s.o).map(([o,v])=>`${OUT[o][0]} ${kg(v)}`).join('<br>')}</td><td><span class="tag">${s.res}%</span></td></tr>`).join(''):'<tr><td colspan="6">Belum ada SPK. Pilih komponen lalu terbitkan SPK.</td></tr>'}</table></div></div>`;
+}
+function runMB(k){const q=Math.min(S.raw[k],parseFloat($('p_'+k).value)||0);
+ if(q<=0){note=msg('Jumlah harus lebih dari 0 kg dan tidak melebihi stok.',1);draw();return}
+ const o={};let sum=0;for(const [p,y] of Object.entries(MB[k])){o[p]=Math.round(q*y*100)/100;sum+=o[p]}
+ S.raw[k]-=q;for(const p in o)S.out[p]+=o[p];
+ const id='SPK-'+pad(S.spk.length+1);S.spk.push({id,tgl:today(),k,kg:q,o,res:Math.round((1-sum/q)*100)});
+ note=msg(`${id} terbit: ${kg(q)} ${RAW[k][0].toLowerCase()} dialokasikan ke ${DEST[k]} dan material regeneratif. Residu 0%.`);draw()}
+// ---------- Marketplace ----------
+function items(){
+ const a=[];
+ const tani=S.man.length?S.man[S.man.length-1].tani:'Kelompok Tani';
+ for(const k in RAW)a.push({id:'raw:'+k,n:RAW[k][0],t:'Bahan baku',s:tani,p:RAW[k][1],st:S.raw[k]});
+ for(const k in OUT)a.push({id:'out:'+k,n:OUT[k][0],t:['cocopeat','biochar'].includes(k)?'Material regeneratif':'Produk biomaterial',s:'Biorefinery Hub COCO-LOOP',p:OUT[k][1],st:S.out[k]});
+ return a}
+let flt='Semua';
+function mkt(){
+ const it=items().filter(i=>flt==='Semua'||i.t===flt);
+ return `<h2>E-marketplace</h2><p class="sub">Petani menjual bahan baku, hub menjual produk biomaterial. Stok tampil real-time dan berkurang otomatis saat ada pesanan.</p>
+ <p>${['Semua','Produk biomaterial','Bahan baku','Material regeneratif'].map(f=>`<button class="btn ${f===flt?'':'alt'} sm" onclick="flt='${f}';draw()">${f}</button>`).join(' ')}</p>
+ <div class="grid">${it.map(i=>`<div class="box card"><span class="tag ${i.st<=0?'w':''}">${i.t}</span><b>${i.n}</b><span class="l">Penjual: ${esc(i.s)}</span><span class="price">${rp(i.p)}<small class="l"> /kg</small></span><span>Stok: <b>${kg(i.st)}</b></span>
+ <button class="btn sm" ${i.st<=0?'disabled':''} onclick="order('${i.id}')">${i.st<=0?'Stok habis':'Pesan'}</button></div>`).join('')}</div>`;
+}
+function order(id){const i=items().find(x=>x.id===id);
+ openM(`<h3>Pesan ${i.n}</h3><p class="l">Penjual: ${esc(i.s)}. Stok ${kg(i.st)}, harga ${rp(i.p)}/kg.</p>
+ <form onsubmit="return placeOrder(event,'${id}')"><label for="bn">Nama pembeli</label><input id="bn" required>
+ <label for="ba">Alamat pengiriman</label><input id="ba" required>
+ <label for="bq">Jumlah (kg)</label><input id="bq" type="number" min="1" max="${i.st}" step="0.1" required>
+ <p><button class="btn">Buat pesanan</button> <button type="button" class="btn alt" onclick="closeM()">Batal</button></p></form>`)}
+function placeOrder(e,id){e.preventDefault();const i=items().find(x=>x.id===id),q=parseFloat($('bq').value);
+ if(!(q>0)||q>i.st){alert('Jumlah melebihi stok tersedia.');return false}
+ const [t,k]=id.split(':');(t==='raw'?S.raw:S.out)[k]-=q;
+ const no='TRX-'+pad(S.ord.length+1);
+ S.ord.push({id:no,tgl:today(),b:$('bn').value.trim(),a:$('ba').value.trim(),n:i.n,s:i.s,q,p:i.p,total:q*i.p,st:'Diproses'});
+ closeM();view='ord';note=msg(`Pesanan ${no} dibuat. Total ${rp(q*i.p)}. Stok sudah dikurangi.`);draw();return false}
+// ---------- Transaksi ----------
+const FLOW=['Diproses','Dikirim','Selesai'];
+function ord(){
+ return `<h2>Transaksi &amp; pengiriman</h2><p class="sub">Transaksi digital tanpa kertas, status pengiriman, dan surat jalan elektronik.</p>
+ <div class="box"><div class="tw"><table><tr><th>No.</th><th>Tanggal</th><th>Pembeli</th><th>Barang</th><th>Penjual</th><th>Total</th><th>Status</th><th></th></tr>
+ ${S.ord.length?[...S.ord].reverse().map(o=>{const i=FLOW.indexOf(o.st);return `<tr><td>${o.id}</td><td>${o.tgl}</td><td>${esc(o.b)}</td><td>${o.n} ${kg(o.q)}</td><td>${esc(o.s)}</td><td>${rp(o.total)}</td><td><span class="tag ${o.st==='Selesai'?'':'w'}">${o.st}</span></td>
+ <td style="white-space:nowrap"><button class="btn alt sm" onclick="sj('${o.id}')">Surat jalan</button>${role!=='beli'&&i>=0&&i<2?` <button class="btn sm" onclick="adv('${o.id}')">${i===0?'Kirim':'Selesaikan'}</button>`:''}</td></tr>`}).join(''):'<tr><td colspan="8">Belum ada transaksi. Buka marketplace dan buat pesanan.</td></tr>'}</table></div></div>`;
+}
+function adv(id){const o=S.ord.find(x=>x.id===id);o.st=FLOW[FLOW.indexOf(o.st)+1];draw()}
+function sj(id){const o=S.ord.find(x=>x.id===id);
+ openM(`<h3>Surat jalan elektronik</h3><p><b>${o.id}</b> | ${o.tgl}</p><table style="min-width:0"><tr><td>Pengirim</td><td>${esc(o.s)}</td></tr><tr><td>Penerima</td><td>${esc(o.b)}</td></tr><tr><td>Alamat</td><td>${esc(o.a)}</td></tr><tr><td>Barang</td><td>${o.n}, ${kg(o.q)}</td></tr><tr><td>Nilai</td><td>${rp(o.total)}</td></tr><tr><td>Status</td><td>${o.st}</td></tr></table>
+ <p><button class="btn" onclick="window.print()">Cetak</button> <button class="btn alt" onclick="closeM()">Tutup</button></p>`)}
+// ---------- Regenerasi ----------
+function reg(){
+ const co=S.reg.reduce((a,r)=>a+r.co2,0);
+ return `<h2>Regenerative tracking</h2><p class="sub">Catat distribusi cocopeat dan biochar kembali ke lahan tani, lalu hitung estimasi reduksi emisi.</p>
+ <div class="grid g2"><div class="box"><h3>Distribusi ke lahan</h3>
+ <p class="l">Stok: cocopeat ${kg(S.out.cocopeat)}, biochar ${kg(S.out.biochar)}</p>
+ <form onsubmit="return addReg(event)"><label for="rl">Kelompok tani / lahan penerima</label><input id="rl" required>
+ <label for="rm">Material</label><select id="rm"><option value="cocopeat">Cocopeat</option><option value="biochar">Biochar</option></select>
+ <label for="rq">Jumlah (kg)</label><input id="rq" type="number" min="1" step="0.1" required>
+ <p><button class="btn" ${role!=='admin'?'disabled':''}>Catat distribusi</button></p></form></div>
+ <div class="box"><div class="k">${kg(co)} CO₂e</div><div class="l">Total estimasi emisi dihindari</div>
+ <p class="l">Asumsi faktor: biochar ${EF.biochar}, cocopeat ${EF.cocopeat} kg CO₂e per kg. Perlu divalidasi sebelum dipakai sebagai klaim resmi.</p></div></div>
+ <div class="box" style="margin-top:12px"><h3>Riwayat &amp; e-sertifikat carbon offset</h3><div class="tw"><table><tr><th>No.</th><th>Tanggal</th><th>Lahan</th><th>Material</th><th>Emisi dihindari</th><th></th></tr>
+ ${S.reg.length?[...S.reg].reverse().map(r=>`<tr><td>${r.id}</td><td>${r.tgl}</td><td>${esc(r.l)}</td><td>${OUT[r.m][0]} ${kg(r.q)}</td><td>${kg(r.co2)} CO₂e</td><td><button class="btn alt sm" onclick="cert('${r.id}')">Sertifikat</button></td></tr>`).join(''):'<tr><td colspan="6">Belum ada distribusi.</td></tr>'}</table></div></div>`;
+}
+function addReg(e){e.preventDefault();const m=$('rm').value,q=parseFloat($('rq').value);
+ if(q>S.out[m]){note=msg(`Stok ${OUT[m][0]} hanya ${kg(S.out[m])}.`,1);draw();return false}
+ S.out[m]-=q;const id='CO-'+pad(S.reg.length+1);
+ S.reg.push({id,tgl:today(),l:$('rl').value.trim(),m,q,co2:q*EF[m]});
+ note=msg(`Distribusi ${id} tercatat dan sertifikat diterbitkan.`);draw();return false}
+function cert(id){const r=S.reg.find(x=>x.id===id);
+ openM(`<h3>E-sertifikat carbon offset</h3><p><b>${r.id}</b> | ${r.tgl}</p><p>Diberikan kepada <b>${esc(r.l)}</b> atas penggunaan ${OUT[r.m][0]} sebanyak ${kg(r.q)} yang menghindari estimasi <b>${kg(r.co2)} CO₂e</b>.</p><p class="l">Angka berdasarkan faktor asumsi simulasi.</p><p><button class="btn" onclick="window.print()">Cetak</button> <button class="btn alt" onclick="closeM()">Tutup</button></p>`)}
+// ---------- Modal ----------
+function openM(h){$('mbody').innerHTML=h;$('modal').style.display='flex'}
+function closeM(){$('modal').style.display='none'}
+$('modal').onclick=e=>{if(e.target.id==='modal')closeM()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeM()});
+draw();
+</script>
+</body>
+</html>
